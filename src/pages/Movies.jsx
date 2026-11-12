@@ -1,0 +1,4 @@
+import { useEffect,useState } from "react";
+import MovieCard from "../components/MovieCard";
+import { api } from "../services/api";
+export default function Movies(){const [items,setItems]=useState([]);const [q,setQ]=useState("");useEffect(()=>{api("/movies").then(x=>setItems(x.items||[])).catch(()=>{});},[]);return <main className="page"><div className="eyebrow">THE BIG SCREEN IS CALLING</div><h1 className="page-title">Explore movies</h1><input className="field search-field" placeholder="Search by movie title" value={q} onChange={e=>setQ(e.target.value)}/><div className="movie-grid">{items.filter(x=>x.title.toLowerCase().includes(q.toLowerCase())).map(m=><MovieCard key={m.id} movie={m}/>)}</div>{!items.length&&<p className="muted">No live movies yet. Add movie records to Cosmos DB or use the demo catalogue on the home page.</p>}</main>}
