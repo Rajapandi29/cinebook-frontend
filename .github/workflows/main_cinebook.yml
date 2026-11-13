@@ -21,7 +21,8 @@ jobs:
       - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
-          node-version: '24-lts'
+          node-version: "22"
+          cache: npm
 
       - name: npm install, build, and test
         run: |
