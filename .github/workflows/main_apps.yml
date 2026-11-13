@@ -1,74 +1,65 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy CINEBOOK Frontend
+name: Build and deploy Node.js app to Azure Web App - apps
 
 on:
   push:
     branches:
-      - main
+      - 'main'
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     permissions:
-      contents: read
+      contents: read #This is required for actions/checkout
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Node.js version
+        uses: actions/setup-node@v3
         with:
           node-version: '24.x'
-          cache: npm
-          cache-dependency-path: package-lock.json
 
-      - name: Install dependencies
-        run: npm ci
+      - name: npm install, build, and test
+        run: |
+          npm install
+          npm run build --if-present
+          npm run test --if-present
 
-      - name: Build frontend
-        run: npm run build
-        env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
-          VITE_CLIENT_ID: ${{ secrets.VITE_CLIENT_ID }}
-          VITE_AUTHORITY: ${{ secrets.VITE_AUTHORITY }}
-          VITE_REDIRECT_URI: ${{ secrets.VITE_REDIRECT_URI }}
-          VITE_API_SCOPE: ${{ secrets.VITE_API_SCOPE }}
-
-      - name: Upload frontend artifact
+      - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: cinebook-frontend
-          path: dist/
-          if-no-files-found: error
+          name: node-app
+          path: .
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
-
     permissions:
-      contents: read
-      id-token: write
+      id-token: write #This is required for requesting the JWT
+      contents: read #This is required for actions/checkout
 
     steps:
-      - name: Download frontend artifact
+      - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: cinebook-frontend
-          path: dist
-
+          name: node-app
+      
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_3E36C054A3324A798BC9E93A16C58A9E }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_FC06FE53DC9F42AC9100381A6A752507 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_C8A7E9A48C9B45A38112B681E7B0C745 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_D94FDA3C3D54453FA98C3F9430AB4C43 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0112E4F834F84E0F890A782509FD562B }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_253D7C3E12B44CE0B70F7E928D6BF617 }}
 
-      - name: Deploy to Azure Web App
+      - name: 'Deploy to Azure Web App'
+        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: apps
-          slot-name: Production
-          package: dist/
+          app-name: 'apps'
+          slot-name: 'Production'
+          package: .
+          
